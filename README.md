@@ -6,12 +6,14 @@ This arrythmia classification using Classification and Regression Tree method , 
 Patient dataset are taken from Bitalino(R) micro-EKG machine and extracted into .json file.
 ## Features
 The features used in classification is:
+
     1.QRS-complex peak
     2.QRS-complex peak variance in one record
-    3.R-R interval
+    3.R-R interval (distance between two nearest QRS peak)
     4.R-R interval variance in one record
-    5.Heart Rate
+    5.Heart Rate (speed in bpm)
     6.Heart Rate variance in one record
+
 ## Preprocessing and feature extraction
 Patient raw data are preprocessed using WFDB http://wfdb.readthedocs.io/ for extract QRS location and peak. Patient dataset using samplerate 100(I have using 360,320 and 1000 samplerate , and the result are very bad).
 Training and testing dataset are preprocessed using WFDB for extract the annotation, QRS peaks. MIT-BIH dataset using samplerate 360, from dataset annotators.
