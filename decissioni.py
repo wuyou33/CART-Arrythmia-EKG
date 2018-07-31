@@ -166,7 +166,7 @@ def accuracy(hasil,target):
                 Qt += 1
             else:
                 Ut += 1
-
+    print(accuracy_score(hasil, target))
     overall_acc = float(ovt / overall) * 100
     Nacc = float(Nt / N) * 100
     Vacc = float(Vt / V) * 100
