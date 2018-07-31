@@ -8,11 +8,13 @@ Patient dataset are taken from Bitalino(R) micro-EKG machine and extracted into 
 The features used in classification is:
 
     1.QRS-complex peak
-    2.R-R interval (distance between two nearest QRS peak)
-    3.Heart Rate 1 step behind
-    4.Heart Rate (speed in bpm)
-    5.Heart Rate 1 step ahead
-    6.Heart Rate variance in one record
+    2.QRS-complex amplitude 1 behind
+    3.QRS-Complex amplitude 1 forward
+    4.R-R interval (distance between two nearest QRS peak)
+    5.Heart Rate 1 step behind
+    6.Heart Rate (speed in bpm)
+    7.Heart Rate 1 step ahead
+    8.Heart Rate variance in one record
 
 ## Preprocessing and feature extraction
 Patient raw data are preprocessed using WFDB http://wfdb.readthedocs.io/ for extract QRS location and peak. Patient dataset using samplerate 100(I have using 360,320 and 1000 samplerate , and the result are very bad).
