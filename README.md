@@ -33,3 +33,7 @@ Amri, M.F., Rizqyawan, M.I. and Turnip, A., 2016. ECG signal processing using of
 
 Luz, E.J. da S., Schwartz, W.R., Cámara-Chávez, G. and Menotti, D., 2016. ECG-based heartbeat classification for arrhythmia detection: A survey. Computer Methods and Programs in Biomedicine, [online] 127, pp.144–164. Available at: <http://dx.doi.org/10.1016/j.cmpb.2015.12.008>.
 
+## Library Used
+Sci-Kit Learn
+Numpy
+WFDB
