@@ -21,12 +21,12 @@ Patient raw data are preprocessed using WFDB http://wfdb.readthedocs.io/ for ext
 Training and testing dataset are preprocessed using WFDB for extract the annotation, QRS peaks.
 Dataset collected from Physionet are MIT-BIH dataset and INCART-St Petersburg 12-lead records.
 ## Class code
-    1.N = Normal
-    2.V = PVC (Premature Ventricular Contraction), extra beat (This is the sign of arrythmia)
-    3.A = APC (Atrial Premature Contraction), intensive and strong beat (This is the sign of arrythmia)
-    4.F = Fussion beat, Dressler beat, sign of Ventricular Tachycardia
-    5.P = Paced, beat paced using pacemaker
-    6.U = Unknown, non-beat.
+    1.N = Normal , for programming purpose coded as 0
+    2.V = PVC (Premature Ventricular Contraction), extra beat (This is the sign of arrythmia), for programming purpose coded as 1
+    3.A = APC (Atrial Premature Contraction), intensive and strong beat (This is the sign of arrythmia), for programming purpose coded as 2
+    4.F = Fussion beat, Dressler beat, sign of Ventricular Tachycardia, for programming purpose coded as 3
+    5.P = Paced, heart paced using artificial pacemaker, for programming purpose coded as 4
+    6.U = Unknown, non-beat., for programming purpose coded as 5
   
 ## Bibliography
 Amri, M.F., Rizqyawan, M.I. and Turnip, A., 2016. ECG signal processing using offline-wavelet transform method based on ECG-IoT device. 2016 3rd International Conference on Information Technology, Computer, and Electrical Engineering (ICITACEE), pp.1–6.
