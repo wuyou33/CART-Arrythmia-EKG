@@ -6,21 +6,34 @@ from sklearn import tree
 from sklearn.datasets.base import Bunch
 from sklearn import tree
 from sklearn.metrics import confusion_matrix
+from sklearn.ensemble import GradientBoostingClassifier
 import csv
 import json
 import pandas as pd
 import numpy as np
 from wfdb import processing as ps
 import getpeak
+from sklearn.externals.six import StringIO
+from IPython.display import Image
+from sklearn.tree import export_graphviz
+from sklearn.neural_network import MLPClassifier
+import pydotplus
+import pydot
 
 def load_my_HR_dataset(path):
     X=[]
     Y=[]
     samp = np.genfromtxt(path, delimiter=',', dtype=np.float32)
-    for g in samp:
-        temp = [g[0],g[1],g[2],g[3],g[4],g[5]]
+    j=1
+    samp2 = []
+    for j in range (len(samp)):
+        if(j!=0):
+            samp2.append(samp[j])
+    for g in samp2:
+        # temp = [g[0], g[1], g[2], g[3], g[4], g[5]]
+        temp = [g[0],g[1],g[2],g[3],g[4],g[5],g[6]]
         X.append(temp)
-        Y.append(g[6])
+        Y.append(g[7])
     Xa=np.array(X)
     Ya=np.array(Y)
     return Xa,Ya
@@ -29,18 +42,24 @@ def load_my_HR_dataset2(path):
     X=[]
     samp = np.genfromtxt(path, delimiter=',', dtype=np.float32)
     for g in samp:
-        temp = [g[0],g[1],g[2],g[3],g[4],g[5]]
+        temp = [g[0], g[1], g[2], g[3], g[4], g[5], g[6]]
         X.append(temp)
         #Y.append(g[6])
     Xa=np.array(X)
     return Xa
 
-def make_mdl(data):
+def make_mdl(data,trainer):
+    lgt = len(data)
     dataset = data[0]
     target = data[1]
-    clf = tree.DecisionTreeClassifier(criterion='entropy')
-    clf = clf.fit(dataset, target)
-    print(clf)
+    #criterion = 'entropy'
+    for j in range(trainer):
+        print(str(j+1)+" Training")
+        #clf = tree.DecisionTreeClassifier(criterion = 'entropy')
+        #clf = MLPClassifier(activation='logistic', solver='sgd', alpha=1e-5,hidden_layer_sizes = (lgt, 3), random_state = 1)
+        clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, random_state=0)
+        clf = clf.fit(dataset, target)
+        j++1
     print("Model Fitted")
     return clf
 
@@ -112,6 +131,7 @@ def number_of_data(target):
             Q += 1
         else:
             U += 1
+    print(N,V,A,F,Q,U)
     return(N,V,A,F,Q,U)
 
 def accuracy(hasil,target):
@@ -131,7 +151,7 @@ def accuracy(hasil,target):
     ovt = 0
     overall = len(hasil)
     for j in range(len(hasil)):
-        print("Processing data : " + str(j + 1))
+        # print("Processing data : " + str(j + 1))
         if hasil[j] == target[j]:
             ovt += 1
             if (hasil[j] == 0):
@@ -172,19 +192,19 @@ def accuracy(hasil,target):
 
 def main():
 
-    trainer = load_my_HR_dataset(r"E:\ECG\EKGReader\full.csv")
+    trainer = load_my_HR_dataset(r"E:\ECG\EKGReader\allin.csv")
     tester = load_my_HR_dataset(r"E:\ECG\EKGReader\test.csv")
     #fullist = load_my_HR_dataset2(r"E:\ECG\EKGReader\samp1.csv")
-
     tester_data = tester[0]
     tester_class = tester[1]
-    clf = make_mdl(trainer)
+    clf = make_mdl(trainer,1)
     chs = "YES"
     while (chs != "NO"):
-        print("1.TRAINING Tree\n2.TESTING tree\n3.TESTING TREE WITH EKG DATASET\nSELECT MENU")
+        print("1.TRAINING Tree\n2.TESTING tree\n3.TESTING TREE WITH EKG DATASET\n4.Show tree model\n5.Build Patient Dataset\nSELECT MENU")
         answer = input()
         if (answer == "1"):
-            clf = make_mdl(trainer)
+            training = int(input("Number of Iteration : "))
+            clf = make_mdl(trainer,training)
             chs = input("Exit to main menu? YES/NO")
             if (chs == "NO"):
                 exit()
@@ -195,22 +215,10 @@ def main():
             if (chs == "NO"):
                 exit()
         elif (answer == "3"):
-            fileset = ["samp1", "samp2", "samp3", "samp4", "samp5"]
-            for w in fileset:
-                filename = "\\" + str(w)
-                dir = r"E:\ECG\EKGReader\Data\json"
-                type = ".json"
-                path = dir + filename + type
-                dirout = r"E:\ECG\EKGReader"
-                typeout = ".csv"
-                dirouts = dirout+filename+typeout
-                signal = getpeak.load_tester(path)
-                featureist = getpeak.makefeat(signal)
-                pdr = pd.DataFrame(featureist, columns=["Amplitude", "Var Amp", "RR", "Var RR", "HR", "Var HR"])
-                pdr.to_csv(dirouts, index=False)
-
-            for k in fileset:
-                filename = "\\" + str(k)
+            for k in range (len(fileset)):
+                seq = k+1
+                print("Patient "+str(seq))
+                filename = "\\" + str(fileset[k])
                 dir = r"E:\ECG\EKGReader"
                 type = ".csv"
                 path = dir + filename + type
@@ -222,6 +230,33 @@ def main():
                 stats = np.asarray(stats)
                 test_result(stats, clf)
 
+            chs = input("Exit to main menu? YES/NO")
+            if (chs == "NO"):
+                exit()
+        elif(answer=='4'):
+            dot_data = StringIO()
+            export_graphviz(clf, out_file=dot_data,
+                            filled=True, rounded=True,
+                            special_characters=True)
+            graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+            Image(graph.create_png())
+            chs = input("Exit to main menu? YES/NO")
+            if (chs == "NO"):
+                exit()
+        elif(answer=='5'):
+            fileset = ["samp1", "samp2", "samp3", "samp4", "samp5"]
+            for w in fileset:
+                filename = "\\" + str(w)
+                dir = r"E:\ECG\EKGReader\Data\json"
+                type = ".json"
+                path = dir + filename + type
+                dirout = r"E:\ECG\EKGReader"
+                typeout = ".csv"
+                dirouts = dirout + filename + typeout
+                signal = getpeak.load_tester(path)
+                featureist = getpeak.makefeat(signal)
+                pdr = pd.DataFrame(featureist, columns=["Amplitude","1 Back","1 Forward","RR","HR","HR Before","HR After"])
+                pdr.to_csv(dirouts, index=False)
             chs = input("Exit to main menu? YES/NO")
             if (chs == "NO"):
                 exit()
