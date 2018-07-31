@@ -16,7 +16,8 @@ The features used in classification is:
 
 ## Preprocessing and feature extraction
 Patient raw data are preprocessed using WFDB http://wfdb.readthedocs.io/ for extract QRS location and peak. Patient dataset using samplerate 100(I have using 360,320 and 1000 samplerate , and the result are very bad).
-Training and testing dataset are preprocessed using WFDB for extract the annotation, QRS peaks. MIT-BIH dataset using samplerate 360, from dataset annotators.
+Training and testing dataset are preprocessed using WFDB for extract the annotation, QRS peaks.
+Dataset collected from Physionet are MIT-BIH dataset and INCART-St Petersburg 12-lead records.
 ## Class code
     1.N = Normal
     2.V = PVC (Premature Ventricular Contraction), extra beat (This is the sign of arrythmia)
