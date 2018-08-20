@@ -30,8 +30,20 @@ Dataset collected from Physionet are MIT-BIH dataset and INCART-St Petersburg 12
   
 ## Bibliography
 Amri, M.F., Rizqyawan, M.I. and Turnip, A., 2016. ECG signal processing using offline-wavelet transform method based on ECG-IoT device. 2016 3rd International Conference on Information Technology, Computer, and Electrical Engineering (ICITACEE), pp.1–6.
+Ashley, E. a and Niebauer, J., 2004. Cardiology Explained. Remedica.
+Breiman, L., 2001. Random Forest. pp.1–33.
+Chen, J. and Itoh, S., 1998. A Wavelet Transform-Based ECG Compression. 45(12), pp.1414–1419.
+Clifford, G., 2006. Advanced Method and Tools for ECG Data Analysis.
+Goldberger, A.L., Amaral, L.A.N., Glass, L., Hausdorff, J.M., Ivanov, P.C., Mark, R.G., Mietus, J.E., Moody, G.B., Peng, C. and Stanley, H.E., 2014. Current Perspective PhysioBank, PhysioToolkit, and PhysioNet Components of a New Research Resource for Complex Physiologic Signal.
+Iqbal, U., Wah, T.Y., Habib Ur Rehman, M. and Mastoi, Q.U.A., 2018. Usage of Model Driven Environment for the Classification of ECG features: A Systematic Review. IEEE Access, 6, pp.23120–23136.
+Köhler, B.U., Hennig, C. and Orglmeister, R., 2002. The principles of software QRS detection. IEEE Engineering in Medicine and Biology Magazine, 21(1), pp.42–57.
+Li, W. and Li, J., 2017. Local Deep Field for Electrocardiogram Beat Classification. IEEE Sensors Journal, 18(4), pp.1656–1664.
+Luz, E.J. da S., Schwartz, W.R., Cámara-Chávez, G. and Menotti, D., 2016. ECG-based heartbeat classification for arrhythmia detection: A survey. Computer Methods and Programs in Biomedicine, [online] 127, pp.144–164. Tersedia di: <http://dx.doi.org/10.1016/j.cmpb.2015.12.008>.
+Nag, P., Mondal, S., Ahmed, F., More, A. and Raihan, M., 2017. A simple acute myocardial infarction (Heart Attack) prediction system using clinical data and data mining techniques. 2017 20th International Conference of Computer and Information Technology (ICCIT), pp.1–6.
+Spach, M.S. and Kootsey, J.M., 1983. The nature of electrical propagation in cardiac muscle. The American journal of physiology, 244(1), pp.H3–H22.
+Texas Heart Institute, 2018. Categories of Arrhythmias. [online] Tersedia di: <https://www.texasheart.org/heart-health/heart-information-center/topics/categories-of-arrhythmias/> [Diakses 4 Agustus 2018].
 
-Luz, E.J. da S., Schwartz, W.R., Cámara-Chávez, G. and Menotti, D., 2016. ECG-based heartbeat classification for arrhythmia detection: A survey. Computer Methods and Programs in Biomedicine, [online] 127, pp.144–164. Available at: <http://dx.doi.org/10.1016/j.cmpb.2015.12.008>.
+
 
 ## Library Used
 Sci-Kit Learn
