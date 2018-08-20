@@ -1,43 +1,70 @@
-import pandas as pd
 import numpy as np
 from wfdb import processing as ps
 import json
+import matplotlib.pyplot as plt
 
 def load_tester(path):
     with open(path) as f:
         data = json.load(f)
-    print(data)
-    return np.asarray(data)
+    data=np.asarray(data)
+    return(data.astype(np.float32))
 
 
+def peaks_hr(sig, peak_inds, fs, title, figsize=(20, 10), saveto=None):
+    "Plot a signal with its peaks and heart rate"
+    # Calculate heart rate
+    hrs = ps.compute_hr(sig_len=len(sig), qrs_inds=peak_inds, fs=fs)
 
-def makefeat(signal):
+    N = sig.shape[0]
+
+    fig, ax_left = plt.subplots(figsize=figsize)
+    ax_right = ax_left.twinx()
+
+    ax_left.plot(sig, color='#3979f0', label='Signal')
+    ax_left.plot(peak_inds, sig[peak_inds], 'rx', marker='x', color='#8b0000', label='Peak', markersize=12)
+    ax_right.plot(np.arange(N), hrs, label='Heart rate', color='m', linewidth=2)
+
+    ax_left.set_title(title)
+
+    ax_left.set_xlabel('Time (ms)')
+    ax_left.set_ylabel('ECG (mV)', color='#3979f0')
+    ax_right.set_ylabel('Heart rate (bpm)', color='m')
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax_left.tick_params('y', colors='#3979f0')
+    ax_right.tick_params('y', colors='m')
+    if saveto is not None:
+        plt.savefig(saveto, dpi=600)
+    plt.show()
+
+def makefeat2(signal):
     peakers = ps.xqrs_detect(signal, 100)
-    real_peak = peakers
-    preprocessed = []
-    for k in real_peak:
-        preprocessed.append(signal[k])
+    return peakers
+
+def makefeat(signal,result):
+    real_peak =  result
     samplerate = 100
     rr = []
     HR = []
+    signals=[]
+    for k in result:
+        signals.append(signal[k])
     for w in range(len(real_peak)):
         if (w < len(real_peak) - 1):
-            rrs = (real_peak[w + 1] - real_peak[w]) / samplerate
-            HRs = 60 / rrs
+            rrs = round(((real_peak[w + 1] - real_peak[w]) / samplerate),3)
+            HRs = int(60 / rrs)
             rr.append(rrs)
             HR.append(HRs)
         else:
             rr.append(0)
             HR.append(0)
-
     threeclash = []
     for j in range(len(rr)):
-        peak = preprocessed[j]
+        peak = signals[j]
         if(j==0):
-            toback=0
-            toward = preprocessed[j]-preprocessed[j+1]
+            toback = 0
+            toward = signals[j+1]
         elif(j==len(rr)-1):
-            toback = preprocessed[j] - preprocessed[j - 1]
+            toback = signals[j - 1]
             toward = 0
         rint = rr[j]
         Hrt = HR[j]
@@ -45,58 +72,19 @@ def makefeat(signal):
         threeclash.append(temp)
 
     featureist = []
-    va=0
-    vb=0
-    amp = 0
-    hrv = 0
-    rrv = 0
-    for k in threeclash:
-        amp += k[0]
-        rrv += k[3]
-        hrv += k[4]
-    ampv = amp / len(threeclash)
-    rrvv = rrv / len(threeclash)
-    hrvv = hrv / len(threeclash)
-    vg = len(threeclash)
-    scr = float(vg/15)
     for k in range (len(threeclash)):
         if(k==0):
-            va = threeclash[k + 1][0]
-            vb = 0
             hb = 0
             hf = threeclash[k+1][4]
 
         elif(k==len(threeclash)-1):
-            hb = threeclash[k][3]-threeclash[k - 1][4]
+            hb = threeclash[k - 1][4]
             hf = 0
-            va = 0
-            vb = threeclash[k - 1][0]
-
         else:
-            hb = threeclash[k][3]-threeclash[k - 1][4]
-            hf = threeclash[k][3]-threeclash[k+1][4]
-            va = threeclash[k + 1][0]
-            vb = threeclash[k - 1][0]
-
-        # avar = np.absolute(threeclash[k][0] - ampv)
-        # rvar = np.absolute(threeclash[k][1] - rrvv)
-        # hrvar = np.absolute(threeclash[k][2] - hrvv)
-
-        temp = [threeclash[k][0],vb,va,threeclash[k][1],hb,threeclash[k][3],hf]
+            hb = threeclash[k - 1][4]
+            hf = threeclash[k+1][4]
+        temp = [threeclash[k][0],threeclash[k][1],threeclash[k][2],threeclash[k][3],hb,threeclash[k][4],hf]
         featureist.append(temp)
     return featureist
 
-def signalmaker():
-    fileset = ["samp1","samp2","samp3","samp4","samp5"]
-    for w in fileset:
-        filename = "\\" + str(w)
-        dir = r"E:\ECG\EKGReader\Data\json"
-        type = ".json"
-        path = dir + filename + type
-        typeout = ".csv"
-        dirs = dir + filename + typeout
-        signal = load_tester(path)
-        featureist = makefeat(signal)
-        pdr = pd.DataFrame(featureist, columns=["Amplitude","1 Back","1 Forward","RR","HR","HR Before","HR After"])
-        pdr.to_csv(dirs, index=False)
-    exit()
+

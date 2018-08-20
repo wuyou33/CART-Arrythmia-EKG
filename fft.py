@@ -2,18 +2,12 @@ import wfdb
 import pandas as pd
 import numpy as np
 
-def dataset_making(sig,types):
-    dataset2=[]
+def dataset_making(sig):
     signal = []
     dataset = []
-    if(types=="1"):
-        ann = wfdb.rdann('mitdb/' + sig, 'atr')
-        sig, fields = wfdb.rdsamp('mitdb/' + sig, channels=[1])
-        samplerate = ann.fs
-    elif(types=="2"):
-        ann = wfdb.rdann('INCART/' + sig, 'atr')
-        sig, fields = wfdb.rdsamp('INCART/' + sig, channels=[7])
-        samplerate = ann.fs
+    ann = wfdb.rdann('INCART/' + sig, 'atr')
+    sig, fields = wfdb.rdsamp('INCART/' + sig, channels=[7])
+    samplerate = ann.fs
     cd = []
     for w in range(len(ann.sample)):
         types = ann.symbol[w]
@@ -81,15 +75,24 @@ def dataset_making(sig,types):
             hrb.append(hr[g - 1])
     for c in range(len(hr)-1):
         c+=1
-        typenew = [amp[c], bk[c], fr[c], rrt[c], hrb[c], hr[c], hra[c], cld[c]]
+        typenew = [amp[c], bk[c], fr[c], rrt[c], hrb[c], hr[c], hra[c], dtypes(cld[c])]
         dtn.append(typenew)
     return dtn
 # "Amplitude","1 Back","1 Forward","RR","HR","HR interval",  "TYPE"
+def writenmit(set):
+    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
+    pdr.to_csv(r'E:\ECG\EKGReader\testMIT.csv', index=False)
+def writentmit(set):
+    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
+    pdr.to_csv(r'E:\ECG\EKGReader\fullMIT.csv', index=False)
+
+def allinmit(set):
+    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
+    pdr.to_csv(r'E:\ECG\EKGReader\allinMIT.csv', index=False)
+
 def writen(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
     pdr.to_csv(r'E:\ECG\EKGReader\test.csv', index=False)
-
-
 def writent(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
     pdr.to_csv(r'E:\ECG\EKGReader\full.csv', index=False)
@@ -98,18 +101,21 @@ def allin(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
     pdr.to_csv(r'E:\ECG\EKGReader\allin.csv', index=False)
 
-
 def featuring(len_set,types):
     feature = []
     fc=[]
     for g in range(len(len_set)):
         print("Processing data " + str(g + 1))
         arv = (dataset_making(len_set[g],types))
+        dir = r'E:\ECG\EKGReader'
+        filed = '\\' + str(len_set[g])
+        ftype = '.csv'
+        filename = dir + filed + ftype
+        pda = pd.DataFrame(arv, columns=["Amplitude", "1 Back", "1 Forward", "RR", "HR back", "HR", "HR After", "TYPE"])
+        pda.to_csv(filename, index=False)
         for j in range(len(arv)-1):
             j+=1
             feature.append(arv[j])
-    for j in range(len(feature)):
-        feature[j][7] = dtypes(feature[j][7])
     return feature
 
 
@@ -127,10 +133,6 @@ def dtypes(types):
     else:
         types = 5  # "else"
     return types
-
-
-
-
 
 def statistical_feature(feat):
     stat = []
@@ -328,26 +330,46 @@ def main():
                   'I62',  'I64',  'I66',  'I68',  'I70',
                   'I72', 'I74'
                   ]
-    typ = input("1.Use MIT-BIH dataset\n2.Use INCART St.Petersburg Dataset\nSelect data")
+    typ = input("1.Use MIT-BIH dataset\n2.Use INCART St.Petersburg Dataset\n3.Make all\nSelect data")
     if(typ=='1'):
-        feature1 = featuring(d1,typ)
+        feature1 = featuring(d1,'1')
+        writenmit(feature1)
+        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        feature = featuring(ds2,'1')
+        writentmit(feature)
+        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        feature3 = featuring(sg,'1')
+        # f3= statistical_feature(feature3)
+        allinmit(feature3)
+        exit()
+    elif(typ==2):
+        feature1 = featuring(incart_train,'2')
         writen(feature1)
         print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(ds2,typ)
+        feature = featuring(incart_test,'2')
         writent(feature)
         print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(sg,typ)
+        feature3 = featuring(incart_all,'2')
         # f3= statistical_feature(feature3)
         allin(feature3)
         exit()
     else:
-        feature1 = featuring(incart_train,typ)
+        feature1 = featuring(d1, '1')
+        writenmit(feature1)
+        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        feature = featuring(ds2, '1')
+        writentmit(feature)
+        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        feature3 = featuring(sg, '1')
+        # f3= statistical_feature(feature3)
+        allinmit(feature3)
+        feature1 = featuring(incart_train, '2')
         writen(feature1)
         print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(incart_test,typ)
+        feature = featuring(incart_test, '2')
         writent(feature)
         print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(incart_all,typ)
+        feature3 = featuring(incart_all, '2')
         # f3= statistical_feature(feature3)
         allin(feature3)
         exit()
