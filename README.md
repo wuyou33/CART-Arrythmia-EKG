@@ -17,9 +17,9 @@ The features used in classification is:
     8.Heart Rate variance in one record
 
 ## Preprocessing and feature extraction
-Patient raw data are preprocessed using WFDB http://wfdb.readthedocs.io/ for extract QRS location and peak. Patient dataset using samplerate 100(I have using 360,320 and 1000 samplerate , and the result are very bad).
+Patient raw data are preprocessed using non-linear Transformation method (Kathirvel et.al., 2011).I using 100 samplerate for the signal (I have used 360,320 and 1000 samplerate , and the result are very bad).
 Training and testing dataset are preprocessed using WFDB for extract the annotation, QRS peaks.
-Dataset collected from Physionet are MIT-BIH dataset and INCART-St Petersburg 12-lead records.
+Dataset collected from Physionet are MIT-BIH dataset and INCART-St Petersburg 12-lead records. I use lead AVR.
 ## Class code
     1.N = Normal , for programming purpose coded as 0
     2.V = PVC (Premature Ventricular Contraction), extra beat (This is the sign of arrythmia), for programming purpose coded as 1
@@ -43,21 +43,23 @@ Goldberger, A.L., Amaral, L.A.N., Glass, L., Hausdorff, J.M., Ivanov, P.C., Mark
 
 Iqbal, U., Wah, T.Y., Habib Ur Rehman, M. and Mastoi, Q.U.A., 2018. Usage of Model Driven Environment for the Classification of ECG features: A Systematic Review. IEEE Access, 6, pp.23120–23136.
 
+Kathirvel, P., Manikandan, M.S., Prasanna, S.R.M. and Soman, K.P., 2011. An Efficient R-peak Detection Based on New Nonlinear Transformation and First-Order Gaussian Differentiator. Cardiovascular Engineering and Technology, 2(4), pp.408–425.
+
 Köhler, B.U., Hennig, C. and Orglmeister, R., 2002. The principles of software QRS detection. IEEE Engineering in Medicine and Biology Magazine, 21(1), pp.42–57.
 
 Li, W. and Li, J., 2017. Local Deep Field for Electrocardiogram Beat Classification. IEEE Sensors Journal, 18(4), pp.1656–1664.
-
-Luz, E.J. da S., Schwartz, W.R., Cámara-Chávez, G. and Menotti, D., 2016. ECG-based heartbeat classification for arrhythmia detection: A survey. Computer Methods and Programs in Biomedicine, [online] 127, pp.144–164. 
+Luz, E.J. da S., Schwartz, W.R., Cámara-Chávez, G. and Menotti, D., 2016. ECG-based heartbeat classification for arrhythmia detection: A survey. Computer Methods and Programs in Biomedicine, 127, pp.144–164. 
 
 Nag, P., Mondal, S., Ahmed, F., More, A. and Raihan, M., 2017. A simple acute myocardial infarction (Heart Attack) prediction system using clinical data and data mining techniques. 2017 20th International Conference of Computer and Information Technology (ICCIT), pp.1–6.
 
 Spach, M.S. and Kootsey, J.M., 1983. The nature of electrical propagation in cardiac muscle. The American journal of physiology, 244(1), pp.H3–H22.
 
-Texas Heart Institute, 2018. Categories of Arrhythmias. [online] Available at: <https://www.texasheart.org/heart-health/heart-information-center/topics/categories-of-arrhythmias/> [Diakses 4 Agustus 2018].
+Texas Heart Institute, 2018. Categories of Arrhythmias. [online] Available at: <https://www.texasheart.org/heart-health/heart-information-center/topics/categories-of-arrhythmias/> [Diakses 4 Agustus. 2018].
 
 
 
 ## Library Used
 Sci-Kit Learn
+Scipy
 Numpy
 WFDB
