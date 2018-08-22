@@ -11,6 +11,9 @@ import json
 from wfdb import processing as ps
 import getpeak
 from sklearn.ensemble import RandomForestClassifier
+import scipy.signal
+import xlsxwriter
+import time
 def load_my_HR_dataset(path):
     X=[]
     Y=[]
@@ -37,19 +40,23 @@ def load_my_HR_dataset2(samp):
     return Xa
 
 def make_mdl(data):
+    start_time = time.time()
     dataset = data[0]
     target = data[1]
-    clf = RandomForestClassifier(random_state= 1000 ,n_estimators=1000, criterion='gini')
+    clf = RandomForestClassifier(random_state= 100,n_estimators=100,criterion='entropy')
     clf = clf.fit(dataset, target)
-    print("Model Fitted")
+    print("Model Fitted,\nTime execution to build model : ")
+    print("--- %s seconds ---" % (time.time() - start_time))
     return clf
 
 def test(dataset,clf):
+    start_time = time.time()
     hasil = []
     for g in dataset:
         result = clf.predict(np.reshape(g, (1, -1)))
         hasil.append(result)
-    print("Classification done")
+    print("Classification done,\nTime execution to build model : ")
+    print("--- %s seconds ---" % (time.time() - start_time))
     return hasil
 
 def test_result(dataset,clf):
@@ -154,13 +161,13 @@ def accuracy2(hasil,target):
                 Qt += 1
             else:
                 Ut += 1
-    overall_acc = float(ovt / overall) * 100
-    Nacc = float(Nt / N) * 100
-    Vacc = float(Vt / V) * 100
-    Aacc = float(St / S) * 100
-    Facc = float(Ft / F) * 100
-    Qacc = float(Qt / Q) * 100
-    Uacc = float(Ut / U) * 100
+    overall_acc = round((float(ovt / overall) * 100),2)
+    Nacc = round((float(Nt / N) * 100),2)
+    Vacc = round((float(Vt / V) * 100),2)
+    Aacc = round((float(St / S) * 100),2)
+    Facc = round((float(Ft / F) * 100),2)
+    Qacc = round((float(Qt / Q) * 100),2)
+    Uacc = round((float(Ut / U) * 100),2)
     df = confusion_matrix(target, hasil)
     print("Normal: \nDetected right:" + str(df[0][0]) + " Detected Wrong = " + str(
         df[0][1] + df[0][2] + df[0][3] + df[0][4] + df[0][5]) +
@@ -187,10 +194,8 @@ def accuracy2(hasil,target):
                 "Unknown/Non-Beat(U): " + str(Uacc) + "%")
     print(result)
 def main():
-    trainer = load_my_HR_dataset(r"E:\ECG\EKGReader\full.csv")
+    trainer = load_my_HR_dataset(r"..\EKGReader\full.csv")
     clf = make_mdl(trainer)
-    trainer2 = load_my_HR_dataset(r"E:\ECG\EKGReader\allin.csv")
-    clt = make_mdl(trainer2)
     chs = "YES"
     while (chs != "NO"):
                 print("\1.TESTING tree\n2.TESTING TREE WITH EKG DATASET\nSELECT MENU")
@@ -211,7 +216,7 @@ def main():
                         w = input("1.Test by data per data\n2.Test by testing set\n3.Test with all dataset\nSelect")
                         if (w == "1"):
                             for g in incart_all:
-                                dir_data = r"E:\ECG\EKGReader"
+                                dir_data = r"..\ECG\EKGReader"
                                 sample = "\\" + g
                                 types = ".csv"
                                 files = dir_data + sample + types
@@ -227,7 +232,7 @@ def main():
                                 if (chs == "NO"):
                                     exit()
                         if (w == '2'):
-                            tester = load_my_HR_dataset(r"E:\ECG\EKGReader\test.csv")
+                            tester = load_my_HR_dataset(r"..\EKGReader\test.csv")
                             tester_data = tester[0]
                             tester_class = tester[1]
                             hasil = test(tester_data, clf)
@@ -238,7 +243,7 @@ def main():
                                 if (chs == "NO"):
                                     exit()
                         if (w == '3'):
-                            tester = load_my_HR_dataset(r"E:\ECG\EKGReader\allin.csv")
+                            tester = load_my_HR_dataset(r"..\EKGReader\allin.csv")
                             tester_data = tester[0]
                             tester_class = tester[1]
                             hasil = test(tester_data, clf)
@@ -249,33 +254,111 @@ def main():
                                 if (chs == "NO"):
                                     exit()
                 elif (answer == "2"):
+                    ecg=[]
 
-                    patient = input("Masukkan data pasien")
-                    filename = "\\" + patient
-                    dir = r"E:\ECG\EKGReader\Data\json"
-                    typed = ".json"
-                    path = dir + filename + typed
-                    signal = getpeak.load_tester(path)
-                    pkr = getpeak.makefeat2(signal)
-                    features  = getpeak.makefeat(signal,pkr)
-                    fullist = load_my_HR_dataset2(features)
-                    rs = test_result(fullist, clt)
-                    ANN = []
-                    for k in rs:
-                        ks = int(k)
-                        if ks==0: ANN.append('N')
-                        elif ks == 1: ANN.append('V')
-                        elif ks == 2: ANN.append('A')
-                        elif ks == 3: ANN.append('F')
-                        elif ks == 4: ANN.append('P')
-                        else: ANN.append('U')
-                    print(ANN)
-                    #wfdb.plot_items(signal=signal,annotation=[ann.sample], title=patient, time_units='seconds',figsize=(10, 4), ecg_grids='all')
+                    datas = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+                    for w in range(len(datas)):
+                        print("Sample : "+str(datas[w]))
+                        # patient = input("Masukkan data pasien")
+                        patient = str(datas[w])
+                        filename = "\\" + patient
+                        dir = "..\EKGReader\Data\json"
+                        typed = ".json"
+                        path = dir + filename + typed
+                        signal = getpeak.load_tester(path)
+                        for g in range(5000):
+                            ecg.append(signal[g])
+                        #rate = samplerate sinyal
+                        rate = 100
+                        # Band pass batas bawah
+                        lowfreq = 5.0
+                        # Band pass batas atas
+                        highfreq = 15.0
+                        lopass = scipy.signal.butter(1, highfreq / (rate / 2.0), 'low')
+                        hipass = scipy.signal.butter(1, lowfreq / (rate / 2.0), 'high')
+                        # TODO: Bandpass filter, modifikasi disini
+                        ecg_lo = scipy.signal.filtfilt(*lopass, x=ecg)
+                        ecg_bd = scipy.signal.filtfilt(*hipass, x=ecg_lo)
+
+                        # Square (=signal power) turunan sinyal, dan dikuadratkan
+                        dfecg = np.diff(ecg_bd)
+                        decg_pwr = np.square(dfecg)
+                        signew = decg_pwr
+
+                        pkr = getpeak.detect_beats(signal)
+                        features = getpeak.makefeat(signew, pkr)
+                        fullist = load_my_HR_dataset2(features)
+                        rs = test_result(fullist, clf)
+                        ANN = []
+                        for k in rs:
+                            ks = int(k)
+                            if ks == 0:
+                                ANN.append('N')
+                            elif ks == 1:
+                                ANN.append('V')
+                            elif ks == 2:
+                                ANN.append('A')
+                            elif ks == 3:
+                                ANN.append('F')
+                            elif ks == 4:
+                                ANN.append('P')
+                            else:
+                                ANN.append('U')
+                        for k in range(len(features)):
+                            features[k].append(ANN[k])
+
+                        x = []  # length of signal
+                        x2 = []  # length index of signal
+                        y1 = []  # amplitude of raw signal
+                        y2 = []  # amplitude of r-peak
+                        y3 = []  # amplitude of preprocessed signal
+                        y4 = []  # peak of preprocessed signal
+                        nnew = []
+                        for g in range(0,2000):
+                            x.append(g)
+                        for h in range(0,2000):
+                            y1.append(signew[h])
+                        for h in range(0,2000):
+                            y3.append(signal[h])
+                        for i in range(50):
+                            x2.append(pkr[i])
+                        for k in range(50):
+                            y2.append(signal[x2[k]])
+                        for w in range(50):
+                            y4.append(1)
+                        for m in range(50):
+                            nnew.append(ANN[m])
+                        print(len(x),len(x2),len(y1),len(y2),len(y3),len(y4))
+                        from matplotlib import pyplot as plt
+                        fig, ax = plt.subplots()
+                        ax.scatter(x2, y4, c='orange' ,s=3)
+                        plt.xlabel('time (n/100 .s)')
+                        plt.ylabel('Amplitude')
+                        plt.title('ECG record ' + patient)
+                        for i, txt in enumerate(nnew):
+                            ax.annotate(txt, (x2[i], y4[i]))
+                            plt.axvline(x=x2[i], linewidth=0.5, c='red')
+                        plt.plot(x, y3, linewidth=0.3, c='black',label='Raw')
+                        plt.plot(x, y1, linewidth=0.8, c='blue',label='Preprocessed')
+                        plt.axis([1500, 2000, -1.5,1.5])
+                        fig.show()
+                        fig.savefig(r'..\EKGReader\Data\json' + '\\' + str(
+                            patient) + "plotted.png")  # save the figure to file
+                        pdr = pd.DataFrame(features, columns=["Amplitude", "1 Back", "1 Forward", "RR", "HR back", "HR",
+                                                              "HR After", "TYPE"])
+
+                        status = 'idle'
+                        if(int(patient)/2!=0):
+                            status = ' Duduk'
+                        else: status='Jalan'
+                        writer = pd.ExcelWriter(r'..\EKGReader\\Data\json\\''features ' + str(patient) + " " + status+'.xlsx', engine = 'xlsxwriter')
+                        pdr.to_excel(writer, sheet_name='features '+ str(patient) +" "+ status)
+                        writer.save()
+
                     chs = input("Exit to main menu? YES/NO")
                     if (chs == "NO"):
                         exit()
                 elif (answer == '3'):
-
                     if (chs == "NO"):
                         exit()
 

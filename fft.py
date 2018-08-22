@@ -1,24 +1,47 @@
 import wfdb
 import pandas as pd
 import numpy as np
+import scipy.signal
+def preprocessing(signal,samplerate):
+    ecg = signal
+    ransac_window_size = 5.0
+    rate=samplerate
+    # Low frequency of the band pass filter
+    lowfreq = 5.0
+    # High frequency of the band pass filter
+    highfreq = 15.0
+    lopass = scipy.signal.butter(1, highfreq / (rate / 2.0), 'low')
+    hipass = scipy.signal.butter(1, lowfreq / (rate / 2.0), 'high')
+    # bandpass filtering
+    ecg_lo = scipy.signal.filtfilt(*lopass, x=ecg)
+    ecg_bd = scipy.signal.filtfilt(*hipass, x=ecg_lo)
+    #cari turunan dan kuadratkan sinyal filter
+    decg = np.diff(ecg_bd)
+    decg_power = np.square(decg)
+    return decg_power
 
 def dataset_making(sig):
     signal = []
     dataset = []
+    raw=[]
     ann = wfdb.rdann('INCART/' + sig, 'atr')
-    sig, fields = wfdb.rdsamp('INCART/' + sig, channels=[7])
+    sig, fields = wfdb.rdsamp('INCART/' + sig, channels=[5])
+    for g in sig:
+        raw.append(g[0])
     samplerate = ann.fs
+    signew = preprocessing(raw,samplerate)
     cd = []
     for w in range(len(ann.sample)):
         types = ann.symbol[w]
         array = [ann.sample[w], types]
         cd.append(array)
-    for k in range(len(sig)):
-        sgt = sig[k][0]
+    for k in range(len(signew)):
+        sgt = signew[k]
         temps = [k, sgt]
         signal.append(temps)
     A = cd
     B = signal
+
     B_Dict = {b[0]: b for b in B}
     array_new = [[B_Dict.get(a[0])[0], B_Dict.get(a[0])[1], a[1]] for a in A if B_Dict.get(a[0])]
 
@@ -79,35 +102,24 @@ def dataset_making(sig):
         dtn.append(typenew)
     return dtn
 # "Amplitude","1 Back","1 Forward","RR","HR","HR interval",  "TYPE"
-def writenmit(set):
-    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\testMIT.csv', index=False)
-def writentmit(set):
-    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\fullMIT.csv', index=False)
-
-def allinmit(set):
-    pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\allinMIT.csv', index=False)
-
 def writen(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\test.csv', index=False)
+    pdr.to_csv(r'..\EKGReader\test.csv', index=False)
 def writent(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\full.csv', index=False)
+    pdr.to_csv(r'..\EKGReader\full.csv', index=False)
 
 def allin(set):
     pdr = pd.DataFrame(set, columns=["Amplitude","1 Back","1 Forward","RR","HR back","HR","HR After", "TYPE"])
-    pdr.to_csv(r'E:\ECG\EKGReader\allin.csv', index=False)
+    pdr.to_csv(r'..\EKGReader\allin.csv', index=False)
 
-def featuring(len_set,types):
+def featuring(len_set):
     feature = []
     fc=[]
     for g in range(len(len_set)):
         print("Processing data " + str(g + 1))
-        arv = (dataset_making(len_set[g],types))
-        dir = r'E:\ECG\EKGReader'
+        arv = (dataset_making(len_set[g]))
+        dir = r'..\EKGReader'
         filed = '\\' + str(len_set[g])
         ftype = '.csv'
         filename = dir + filed + ftype
@@ -133,158 +145,6 @@ def dtypes(types):
     else:
         types = 5  # "else"
     return types
-
-def statistical_feature(feat):
-    stat = []
-    amp = []
-    rr = []
-    hr = []
-    for w in range(len(feat)):
-        amp.append(feat[w][0])
-        rr.append(feat[w][3])
-        hr.append(feat[w][5])
-    at = 0
-    rt = 0
-    ht = 0
-    l = len(amp)
-    for j in range(l):
-        at += amp[j]
-        ht += hr[j]
-        rt += rr[j]
-    ava = float(at / l)
-    avr = float(rt / l)
-    avh = float(ht / l)
-    for j in range(l):
-        amp[j] = round((np.square(amp[j] - ava)), 3)
-        rr[j] = round((np.square(rr[j] - avr)), 3)
-        hr[j] = round((np.square(hr[j] - avh)), 3)
-    for k in range(len(feat)):
-        stat.append([feat[k][0], feat[k][1] , feat[k][2], (amp[k]), feat[k][3], (rr[k]), feat[k][4], feat[k][5],feat[k][6], (hr[k]), feat[k][7]])
-    return stat
-
-def pecahdata(feat):
-    result2=[]
-    N = []
-    V = []
-    A = []
-    F = []
-    Q = []
-    U = []
-    for h in feat:
-        if(h[5]==0):
-            N.append(h)
-        elif (h[5] == 1):
-            V.append(h)
-        elif (h[5] == 2):
-            A.append(h)
-        elif (h[5] == 3):
-            F.append(h)
-        elif (h[5] == 4):
-            Q.append(h)
-        else:
-            U.append(h)
-    result=[N,V,A,F,Q,U]
-    for g in result:
-        result2.extend(statistical_feature(g))
-    return result2
-
-def setunique(items):
-    seen = set()
-    for item in items:
-        item = tuple(item)
-        if item not in seen:
-            yield item
-            seen.add(item)
-    return seen
-#
-#
-# def feature_training(sist):
-#     N = []
-#     V = []
-#     A = []
-#     F = []
-#     Q = []
-#     U = []
-#     dataset = []
-#     ln = 700
-#     for w in sist:
-#         if (w[5] == 0):
-#             N.append(w)
-#         elif (w[5] == 1):
-#             V.append(w)
-#         elif (w[5] == 2):
-#             A.append(w)
-#         elif (w[5] == 3):
-#             F.append(w)
-#         elif (w[5] == 4):
-#             Q.append(w)
-#         else:
-#             U.append(w)
-#
-#     for j in range(ln):
-#         dataset.append(N[j])
-#     for j in range(ln):
-#         dataset.append(V[j])
-#     for j in range(ln):
-#         dataset.append(A[j])
-#     for j in range(ln):
-#         dataset.append(F[j])
-#     for j in range(ln):
-#         dataset.append(Q[j])
-#     for j in range(ln):
-#         dataset.append(U[j])
-#     return dataset
-#
-#
-# def feature_weight(sist):
-#     N = []
-#     V = []
-#     A = []
-#     F = []
-#     Q = []
-#     U = []
-#     dataset = []
-#     ln = 1
-#     for w in sist:
-#         if (w[5] == 0):
-#             N.append(w)
-#         elif (w[5] == 1):
-#             V.append(w)
-#         elif (w[5] == 2):
-#             A.append(w)
-#         elif (w[5] == 3):
-#             F.append(w)
-#         elif (w[5] == 4):
-#             Q.append(w)
-#         else:
-#             U.append(w)
-#     print("Reduced Data Set")
-#     print(len(N))
-#     print(len(V))
-#     print(len(A))
-#     print(len(F))
-#     print(len(Q))
-#     print(len(U))
-#     for j in range(ln):
-#         dataset.append(N[rd.randint(0, ((len(N)) - 1))])
-#     for j in range(ln):
-#         dataset.append(V[rd.randint(0, ((len(V)) - 1))])
-#     for j in range(ln):
-#         dataset.append(A[rd.randint(0, ((len(A)) - 1))])
-#     for j in range(ln):
-#         dataset.append(F[rd.randint(0, ((len(F)) - 1))])
-#     for j in range(ln):
-#         dataset.append(Q[rd.randint(0, ((len(Q)) - 1))])
-#     for j in range(ln):
-#         dataset.append(U[rd.randint(0, ((len(U)) - 1))])
-#     return dataset
-
-# fw=featuring(sig)
-# fw2=featuring(ds2)
-# for w in fw:
-#     print(w)
-
-
 
 def main():
     sg = ['100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '111', '112', '113', '114', '115',
@@ -330,56 +190,16 @@ def main():
                   'I62',  'I64',  'I66',  'I68',  'I70',
                   'I72', 'I74'
                   ]
-    typ = input("1.Use MIT-BIH dataset\n2.Use INCART St.Petersburg Dataset\n3.Make all\nSelect data")
-    if(typ=='1'):
-        feature1 = featuring(d1,'1')
-        writenmit(feature1)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(ds2,'1')
-        writentmit(feature)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(sg,'1')
-        # f3= statistical_feature(feature3)
-        allinmit(feature3)
-        exit()
-    elif(typ==2):
-        feature1 = featuring(incart_train,'2')
-        writen(feature1)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(incart_test,'2')
-        writent(feature)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(incart_all,'2')
-        # f3= statistical_feature(feature3)
-        allin(feature3)
-        exit()
-    else:
-        feature1 = featuring(d1, '1')
-        writenmit(feature1)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(ds2, '1')
-        writentmit(feature)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(sg, '1')
-        # f3= statistical_feature(feature3)
-        allinmit(feature3)
-        feature1 = featuring(incart_train, '2')
-        writen(feature1)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature = featuring(incart_test, '2')
-        writent(feature)
-        print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
-        feature3 = featuring(incart_all, '2')
-        # f3= statistical_feature(feature3)
-        allin(feature3)
-        exit()
+    feature1 = featuring(incart_train)
+    writen(feature1)
+    print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+    feature = featuring(incart_test)
+    writent(feature)
+    print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+    feature3 = featuring(incart_all)
+    allin(feature3)
+    exit()
 
 
 
-# for j in feature:
-#     print (j)
-# for j in ft:
-#     print (j)
-# f3=feature_weight(feature2)
 
-# writenw(f3)
